@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  uniskill:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: uniskill:latest
+    container_name: uniskill
+    ports:
+      - "8787:8787"   # MCP Server
+      - "8788:8788"   # A2A Router
+      - "8000:8000"   # API
+    volumes:
+      - ./skills:/app/skills
+      - ./config:/app/config
+      - uniskill_data:/app/data
+    environment:
+      - UNISKILL_MCP_PORT=8787
+      - UNISKILL_A2A_PORT=8788
+      - UNISKILL_API_PORT=8000
+      - UNISKILL_LOG_LEVEL=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from uniskill.core import UniSkillEngine; e = UniSkillEngine(); print(e.health_check()['status'])"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  uniskill_data:
